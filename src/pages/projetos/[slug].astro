@@ -1,0 +1,70 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import T from '../../components/T.astro';
+import { getProjetos } from '../../lib/projetos';
+
+export async function getStaticPaths() {
+  const ps = await getProjetos();
+  return ps.map((p, i) => ({
+    params: { slug: p.slug },
+    props: { projeto: p, anterior: ps[i - 1], proximo: ps[i + 1] },
+  }));
+}
+
+const { projeto: p, anterior, proximo } = Astro.props;
+const d = p.pt.data, e = p.en?.data;
+
+const temPt = !!p.pt.body?.trim();
+const temEn = !!p.en?.body?.trim();
+const Pt = temPt ? (await render(p.pt)).Content : null;
+const En = temEn ? (await render(p.en!)).Content : null;
+
+const og = p.capa ? (await getImage({ src: p.capa, width: 1200, format: 'jpg' })).src : undefined;
+const itens: { r: [string, string]; pt: string; en?: string }[] = [];
+if (d.funcao) itens.push({ r: ['Função', 'Role'], pt: d.funcao, en: e?.funcao });
+if (d.ano) itens.push({ r: ['Ano', 'Year'], pt: String(d.ano) });
+if (d.cliente) itens.push({ r: ['Cliente', 'Client'], pt: d.cliente });
+if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferramentas.join(', ') });
+---
+<Layout title={`${d.titulo} — Caio Neves`} description={d.resumo} image={og}>
+  <article class="projeto">
+    <a class="voltar" href="/#trabalhos">← <T pt="Trabalhos" en="Work" /></a>
+
+    <header class="projeto-header">
+      <p class="kicker">{p.area === 'ux' ? 'UX/UI' : <T pt="Design Gráfico" en="Graphic Design" />}{d.categoria && <> / <T pt={d.categoria} en={e?.categoria} /></>}</p>
+      <h1 class="projeto-title"><T pt={d.titulo} en={e?.titulo} /></h1>
+    </header>
+
+    <div class="projeto-body">
+      {d.tags.length > 0 && <div class="tags">{d.tags.map((t) => <span class="tag">{t}</span>)}</div>}
+      {d.resumo && <p class="projeto-resumo"><T pt={d.resumo} en={e?.resumo} /></p>}
+
+      {itens.length > 0 && (
+        <div class="meta-row">
+          {itens.map((i) => <div class="meta-item"><span class="meta-label"><T pt={i.r[0]} en={i.r[1]} /></span><span class="meta-val"><T pt={i.pt} en={i.en} /></span></div>)}
+        </div>
+      )}
+
+      {d.links.length > 0 && (
+        <div class="links">{d.links.map((l) => <a class="btn" href={l.url} target="_blank" rel="noopener">{l.rotulo}</a>)}</div>
+      )}
+
+      {/* Texto do projeto: se não existir en.md com texto, o português aparece nos dois idiomas */}
+      {Pt && <div class={temEn ? 'prose l-pt' : 'prose'}><Pt /></div>}
+      {En && <div class={temPt ? 'prose l-en' : 'prose'}><En /></div>}
+
+      {p.galeria.length > 0 && (
+        <div class="galeria">
+          {p.galeria.map((img) => <Image src={img} alt={d.titulo} widths={[700, 1100, 1600]} sizes="(max-width: 900px) 100vw, 840px" loading="lazy" />)}
+        </div>
+      )}
+    </div>
+
+    <div class="proximos">
+      {anterior ? <a href={`/projetos/${anterior.slug}/`}><span class="kicker">← <T pt="Anterior" en="Previous" /></span><span class="nome"><T pt={anterior.pt.data.titulo} en={anterior.en?.data.titulo} /></span></a> : <span />}
+      {proximo ? <a href={`/projetos/${proximo.slug}/`}><span class="kicker"><T pt="Próximo" en="Next" /> →</span><span class="nome"><T pt={proximo.pt.data.titulo} en={proximo.en?.data.titulo} /></span></a> : <span />}
+    </div>
+  </article>
+</Layout>

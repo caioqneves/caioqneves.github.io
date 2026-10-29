@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import T from '../components/T.astro';
+import Card from '../components/Card.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { getProjetos } from '../lib/projetos';
+import { site } from '../data/site';
+
+const projetos = await getProjetos();
+const destaque = projetos.find((p) => p.pt.data.destaque);
+const n = (area: string) => projetos.filter((p) => p.area === area).length;
+const anos = projetos.map((p) => p.pt.data.ano).filter((a): a is number => !!a);
+const faixa = anos.length ? ` — ${Math.min(...anos)}–${Math.max(...anos)}` : '';
+
+// foto do "Sobre": coloque src/assets/profile.png (ou .jpg)
+const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/profile.{png,jpg,jpeg,webp}', { eager: true });
+const perfil = Object.values(fotos)[0]?.default;
+---
+<Layout>
+  <section class="hero">
+    <h1 class="hero-title">
+      <T html pt={'Design<br><span class="accent">Gráfico</span><br>&amp; UX/UI'} en={'Graphic<br><span class="accent">Design</span><br>&amp; UX/UI'} />
+    </h1>
+    <div class="hero-meta">
+      <p>Brasil</p>
+      <p><T pt="Design Gráfico" en="Graphic Design" /></p>
+      <p><T pt="Identidade Visual" en="Visual Identity" /></p>
+      <p>UX/UI Design</p>
+    </div>
+  </section>
+
+  {destaque && (() => {
+    const d = destaque.pt.data, e = destaque.en?.data;
+    return (
+      <section id="destaque">
+        <div class="section-label"><span><T pt="Em destaque" en="Featured" /></span></div>
+        <a class="destaque-body" href={`/projetos/${destaque.slug}/`}>
+          <div class="destaque-media">
+            {destaque.capa
+              ? <Image src={destaque.capa} alt={d.titulo} class="card-img" widths={[600, 900, 1300]} sizes="(max-width: 780px) 100vw, 58vw" loading="eager" />
+              : <Placeholder slug={destaque.slug} area={destaque.area} />}
+          </div>
+          <div class="destaque-info">
+            <p class="kicker">{destaque.area === 'ux' ? 'UX/UI' : <T pt="Design Gráfico" en="Graphic Design" />}{d.categoria && <> / <T pt={d.categoria} en={e?.categoria} /></>}</p>
+            <h2 class="destaque-title"><T pt={d.titulo} en={e?.titulo} /></h2>
+            {d.resumo && <p class="destaque-desc"><T pt={d.resumo} en={e?.resumo} /></p>}
+            <div class="meta-row">
+              {d.funcao && <div class="meta-item"><span class="meta-label"><T pt="Função" en="Role" /></span><span class="meta-val"><T pt={d.funcao} en={e?.funcao} /></span></div>}
+              {d.ano && <div class="meta-item"><span class="meta-label"><T pt="Ano" en="Year" /></span><span class="meta-val">{d.ano}</span></div>}
+              {d.cliente && <div class="meta-item"><span class="meta-label"><T pt="Cliente" en="Client" /></span><span class="meta-val">{d.cliente}</span></div>}
+            </div>
+            <span class="btn"><T pt="Ver projeto" en="View project" /></span>
+          </div>
+        </a>
+      </section>
+    );
+  })()}
+
+  <div class="section-label" id="trabalhos"><span><T pt="Seleção de trabalhos" en="Selected works" />{faixa}</span></div>
+
+  <div class="filtros" role="group" aria-label="Filtrar por área">
+    <button class="filtro" data-area="todos" aria-pressed="true"><span class="filtro-nome"><T pt="Todos" en="All" /></span><span class="filtro-n">{projetos.length}</span></button>
+    <button class="filtro" data-area="grafico" aria-pressed="false"><span class="filtro-nome"><T pt="Design Gráfico" en="Graphic Design" /></span><span class="filtro-n">{n('grafico')}</span></button>
+    <button class="filtro" data-area="ux" aria-pressed="false"><span class="filtro-nome">UX/UI</span><span class="filtro-n">{n('ux')}</span></button>
+  </div>
+
+  <div class="grid">
+    {projetos.map((p) => <Card projeto={p} />)}
+    <p class="grid-vazio" id="gridVazio" hidden><T pt="Ainda não há projetos nesta área." en="No projects in this area yet." /></p>
+  </div>
+
+  <section class="about" id="sobre">
+    <div class="about-content">
+      <p class="kicker"><T pt="Sobre" en="About" /></p>
+      <h2 class="about-title"><T pt="Designer com propósito" en="Designer with purpose" /></h2>
+      <div class="about-text">
+        <T html
+          pt="<p>Designer gráfico e de UX/UI, com foco em identidade visual, interfaces digitais e direção de arte. Acredito que bom design é aquele que comunica com clareza e deixa uma impressão duradoura.</p><p>Baseado no Brasil, disponível para projetos nacionais e internacionais.</p>"
+          en="<p>Graphic and UX/UI designer focused on visual identity, digital interfaces and art direction. I believe good design communicates clearly and leaves a lasting impression.</p><p>Based in Brazil, available for national and international projects.</p>" />
+      </div>
+    </div>
+    <div class="about-photo">
+      {perfil && <Image src={perfil} alt="Caio Q. Neves" widths={[600, 900]} sizes="(max-width: 780px) 100vw, 45vw" />}
+    </div>
+  </section>
+
+  <section class="contact" id="contato">
+    <p class="kicker"><T pt="Contato" en="Contact" /></p>
+    <h2 class="contact-title"><T html pt="Vamos<br>conversar?" en="Let's<br>talk?" /></h2>
+    <p class="contact-text"><T pt="Estou disponível para novos projetos, parcerias e colaborações. Entre em contato pelos canais abaixo." en="I'm available for new projects, partnerships and collaborations. Get in touch through the channels below." /></p>
+    <div class="contact-grid">
+      <a href={`mailto:${site.email}`} class="contact-item"><span class="contact-item-label">Email</span><span class="contact-item-value">{site.email}</span></a>
+      <a href={site.instagram.url} target="_blank" rel="noopener" class="contact-item"><span class="contact-item-label">Instagram</span><span class="contact-item-value">{site.instagram.rotulo}</span></a>
+      <a href={site.linkedin.url} target="_blank" rel="noopener" class="contact-item"><span class="contact-item-label">LinkedIn</span><span class="contact-item-value">{site.linkedin.rotulo}</span></a>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Filtro Todos / Design Gráfico / UX-UI  (também funciona por link: /#ux e /#grafico)
+  const botoes = document.querySelectorAll<HTMLButtonElement>('.filtro');
+  const cards = document.querySelectorAll<HTMLElement>('.card');
+  const vazio = document.getElementById('gridVazio')!;
+
+  function aplicar(area: string, atualizarHash = true) {
+    let visiveis = 0;
+    cards.forEach((c) => {
+      const ok = area === 'todos' || c.dataset.area === area;
+      c.hidden = !ok;
+      if (ok) visiveis++;
+    });
+    vazio.hidden = visiveis > 0;
+    botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.area === area)));
+    if (atualizarHash) history.replaceState(null, '', area === 'todos' ? '#trabalhos' : '#' + area);
+  }
+
+  botoes.forEach((b) => b.addEventListener('click', () => aplicar(b.dataset.area!)));
+
+  function porHash() {
+    const h = location.hash.slice(1);
+    if (h === 'grafico' || h === 'ux') {
+      aplicar(h, false);
+      document.getElementById('trabalhos')?.scrollIntoView();
+    }
+  }
+  window.addEventListener('hashchange', porHash);
+  porHash();
+</script>

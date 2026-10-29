@@ -1,0 +1,19 @@
+---
+import { Image } from 'astro:assets';
+import type { Projeto } from '../lib/projetos';
+import T from './T.astro';
+import Placeholder from './Placeholder.astro';
+interface Props { projeto: Projeto }
+const { projeto: p } = Astro.props;
+const d = p.pt.data, e = p.en?.data;
+---
+<a class="card" href={`/projetos/${p.slug}/`} data-area={p.area}>
+  {p.capa
+    ? <Image src={p.capa} alt={d.titulo} class="card-img" widths={[400, 700, 1000]} sizes="(max-width: 450px) 100vw, (max-width: 780px) 50vw, 34vw" />
+    : <Placeholder slug={p.slug} area={p.area} />}
+  <span class="card-area">{p.area === 'ux' ? 'UX/UI' : <T pt="Gráfico" en="Graphic" />}</span>
+  <div class="card-overlay">
+    <div class="card-title"><T pt={d.titulo} en={e?.titulo} /></div>
+    {d.categoria && <div class="card-cat"><T pt={d.categoria} en={e?.categoria} /></div>}
+  </div>
+</a>

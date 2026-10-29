@@ -1,0 +1,20 @@
+---
+// Capa provisória (quando o projeto ainda não tem capa.jpg)
+interface Props { slug: string; area: 'grafico' | 'ux' }
+const { slug, area } = Astro.props;
+const accent = '#c21505';
+const formas = ['circle', 'rect', 'triangle', 'dots', 'cross'] as const;
+const soma = [...slug].reduce((n, c) => n + c.charCodeAt(0), 0);
+const forma = area === 'ux' ? 'lines' : formas[soma % formas.length];
+const f: Record<string, string> = {
+  circle: `<circle cx="100" cy="130" r="75" fill="none" stroke="${accent}" stroke-width="1.5"/><circle cx="100" cy="130" r="45" fill="${accent}" opacity=".12"/><circle cx="100" cy="130" r="8" fill="${accent}"/>`,
+  rect: `<rect x="40" y="70" width="120" height="120" fill="none" stroke="${accent}" stroke-width="1.5"/><rect x="55" y="85" width="90" height="90" fill="${accent}" opacity=".08"/><rect x="80" y="110" width="40" height="40" fill="${accent}" opacity=".45"/>`,
+  triangle: `<polygon points="100,50 170,190 30,190" fill="none" stroke="${accent}" stroke-width="1.5"/><polygon points="100,80 148,175 52,175" fill="${accent}" opacity=".1"/><polygon points="100,115 122,158 78,158" fill="${accent}" opacity=".45"/>`,
+  lines: [0,1,2,3,4,5,6].map((i) => `<line x1="30" y1="${80+i*16}" x2="${170-i*10}" y2="${80+i*16}" stroke="${accent}" stroke-width="${i===3?2:.8}" opacity="${i===3?.85:.25}"/>`).join('') + `<line x1="100" y1="50" x2="100" y2="210" stroke="${accent}" stroke-width=".5" opacity=".15"/>`,
+  dots: Array.from({ length: 25 }, (_, i) => { const x = 50+(i%5)*25, y = 80+Math.floor(i/5)*25, r = i===12 ? 8 : i%3===0 ? 4 : 2; return `<circle cx="${x}" cy="${y}" r="${r}" fill="${accent}" opacity="${i===12?.85:.2}"/>`; }).join(''),
+  cross: `<line x1="100" y1="60" x2="100" y2="200" stroke="${accent}" stroke-width="1.5" opacity=".75"/><line x1="30" y1="130" x2="170" y2="130" stroke="${accent}" stroke-width="1.5" opacity=".75"/><circle cx="100" cy="130" r="30" fill="none" stroke="${accent}" stroke-width=".8" opacity=".25"/><circle cx="100" cy="130" r="6" fill="${accent}"/>`,
+};
+---
+<div class="card-ph">
+  <svg viewBox="0 0 200 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" set:html={f[forma]} />
+</div>

@@ -1,0 +1,12 @@
+---
+// Texto nos dois idiomas. O CSS mostra só o idioma ativo.
+// <T pt="Olá" en="Hello" />   |   com HTML:  <T pt="Linha<br>dois" en="…" html />
+interface Props { pt: string; en?: string; html?: boolean }
+const { pt, en, html = false } = Astro.props;
+---
+{en === undefined || en === pt
+  ? (html ? <Fragment set:html={pt} /> : pt)
+  : <>
+      {html ? <span class="l-pt" set:html={pt} /> : <span class="l-pt">{pt}</span>}
+      {html ? <span class="l-en" set:html={en} /> : <span class="l-en">{en}</span>}
+    </>}

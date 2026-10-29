@@ -1,0 +1,88 @@
+---
+import '@fontsource/bebas-neue';
+import '@fontsource/dm-sans/300.css';
+import '@fontsource/dm-sans/400.css';
+import '@fontsource/dm-mono/300.css';
+import '../styles/global.css';
+import T from '../components/T.astro';
+import { site } from '../data/site';
+
+interface Props { title?: string; description?: string; image?: string }
+const {
+  title = 'Caio Neves — Design Gráfico & UX/UI',
+  description = 'Portfólio de Design Gráfico e UX/UI de Caio Neves',
+  image,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0e0808" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <!-- escolhe o idioma antes de pintar a página (evita piscar) -->
+    <script is:inline>
+      (function () {
+        var p = new URLSearchParams(location.search).get('lang'), s;
+        try { s = localStorage.getItem('lang'); } catch (e) {}
+        var l = p || s || ((navigator.language || 'pt').toLowerCase().indexOf('pt') === 0 ? 'pt' : 'en');
+        document.documentElement.lang = l === 'pt' ? 'pt-BR' : 'en-US';
+      })();
+    </script>
+  </head>
+  <body>
+    <nav>
+      <a href="/" class="logo">caioqneves</a>
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="/#trabalhos"><T pt="Trabalhos" en="Work" /></a></li>
+          <li><a href="/#sobre"><T pt="Sobre" en="About" /></a></li>
+          <li><a href="/#contato"><T pt="Contato" en="Contact" /></a></li>
+        </ul>
+        <div class="lang-toggle">
+          <button class="lang-btn" data-lang="pt" aria-pressed="true">PT-BR</button>
+          <button class="lang-btn" data-lang="en" aria-pressed="false">EN-US</button>
+        </div>
+      </div>
+    </nav>
+
+    <slot />
+
+    <footer>
+      <ul class="footer-links">
+        <li><a href={site.instagram.url} target="_blank" rel="noopener">Instagram</a></li>
+        <li><a href={site.behance.url} target="_blank" rel="noopener">Behance</a></li>
+        <li><a href={site.linkedin.url} target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+      </ul>
+      <p class="footer-copy">© {new Date().getFullYear()} {site.nome}</p>
+    </footer>
+
+    <script>
+      const botoes = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
+      const marcar = () => {
+        const atual = document.documentElement.lang === 'en-US' ? 'en' : 'pt';
+        botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === atual)));
+      };
+      botoes.forEach((b) => b.addEventListener('click', () => {
+        const l = b.dataset.lang!;
+        document.documentElement.lang = l === 'pt' ? 'pt-BR' : 'en-US';
+        try { localStorage.setItem('lang', l); } catch (e) {}
+        marcar();
+      }));
+      marcar();
+    </script>
+  </body>
+</html>
