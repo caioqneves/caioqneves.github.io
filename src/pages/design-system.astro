@@ -1,0 +1,202 @@
+---
+import Layout from '../layouts/Layout.astro';
+import T from '../components/T.astro';
+import Placeholder from '../components/Placeholder.astro';
+
+/* ── Contraste (WCAG) calculado na hora de gerar o site ──
+   Os valores abaixo espelham os tokens de src/styles/global.css. */
+const BG: [number, number, number] = [14, 8, 8];
+const lin = (c: number) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const lum = ([r, g, b]: number[]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+const razao = (a: number[], b: number[]) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+const misturar = (fg: number[], a: number) => fg.map((v, i) => Math.round(BG[i] + (v - BG[i]) * a));
+const hex = (c: number[]) => '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+const TEXTO = [242, 238, 239];
+
+type Cor = { nome: string; rgb: number[]; alpha?: number; papel: 'fundo' | 'texto' | 'destaque' | 'borda'; uso: [string, string] };
+const lista: Cor[] = [
+  { nome: '--bg', rgb: BG, papel: 'fundo', uso: ['Fundo de todo o site.', 'Background of the whole site.'] },
+  { nome: '--surface', rgb: [19, 6, 6], papel: 'fundo', uso: ['Painéis e blocos levemente elevados.', 'Panels and slightly raised blocks.'] },
+  { nome: '--text', rgb: TEXTO, papel: 'texto', uso: ['Títulos e texto principal.', 'Headings and primary text.'] },
+  { nome: '--text-body', rgb: TEXTO, alpha: 0.72, papel: 'texto', uso: ['Parágrafos e descrições.', 'Paragraphs and descriptions.'] },
+  { nome: '--text-muted', rgb: TEXTO, alpha: 0.55, papel: 'texto', uso: ['Texto de apoio e navegação.', 'Supporting text and navigation.'] },
+  { nome: '--text-dim', rgb: TEXTO, alpha: 0.52, papel: 'texto', uso: ['Rótulos e metadados discretos.', 'Quiet labels and metadata.'] },
+  { nome: '--red', rgb: [194, 21, 5], papel: 'destaque', uso: ['Acento grande e molduras. Não use em texto pequeno.', 'Large accent and frames. Not for small text.'] },
+  { nome: '--red-text', rgb: [224, 64, 46], papel: 'texto', uso: ['Vermelho legível: rótulos, links e estados.', 'Readable red: labels, links and states.'] },
+  { nome: '--red-dark', rgb: [141, 0, 1], papel: 'borda', uso: ['Bordas de botões e fundo da opção ativa.', 'Button borders and active option fill.'] },
+];
+const cores = lista.map((c) => {
+  const final = c.alpha ? misturar(c.rgb, c.alpha) : c.rgb;
+  const r = razao(final, BG);
+  return { ...c, hex: c.alpha ? `${hex(c.rgb)} · ${Math.round(c.alpha * 100)}%` : hex(c.rgb), r };
+});
+const brancoSobreVermelho = razao(TEXTO, [141, 0, 1]);
+
+const espacos = [['--sp-1', '0.25rem'], ['--sp-2', '0.5rem'], ['--sp-3', '0.75rem'], ['--sp-4', '1rem'], ['--sp-5', '1.5rem'], ['--sp-6', '2rem'], ['--sp-7', '3rem'], ['--sp-8', '4.5rem']];
+---
+<Layout title="Design system — Caio Neves" description="Cores, tipografia, espaços, componentes e movimento do portfólio de Caio Neves.">
+  <main>
+    <header class="wrap ds-intro" data-reveal="fade">
+      <p class="kicker">Design system</p>
+      <h1 class="ds-title"><T pt="As regras visuais deste site." en="The visual rules of this site." /></h1>
+      <p class="ds-lead"><T
+        pt="Um conjunto pequeno e deliberado de decisões: cores, tipografia, espaços, componentes e movimento. Tudo aqui é renderizado com o próprio CSS do site, então esta página nunca fica desatualizada."
+        en="A small, deliberate set of decisions: color, type, spacing, components and motion. Everything here is rendered with the site’s own CSS, so this page never goes stale." /></p>
+    </header>
+
+    <!-- PRINCÍPIOS -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Princípios" en="Principles" /></span></div>
+      <div class="ds-principles">
+        <div class="ds-principle" data-reveal><h3><T pt="Escuro e silencioso" en="Dark and quiet" /></h3><p><T pt="O fundo quase preto deixa o trabalho ser a cor da página." en="The near-black ground lets the work be the color on the page." /></p></div>
+        <div class="ds-principle" data-reveal><h3><T pt="Vermelho é sinal" en="Red is a signal" /></h3><p><T pt="Só aparece onde há estado, ação ou ênfase: nunca como decoração." en="It only appears for state, action or emphasis: never as decoration." /></p></div>
+        <div class="ds-principle" data-reveal><h3><T pt="Tipografia neutra" en="Neutral type" /></h3><p><T pt="Uma só família (Helvetica). A hierarquia vem do tamanho e do peso." en="One family (Helvetica). Hierarchy comes from size and weight." /></p></div>
+        <div class="ds-principle" data-reveal><h3><T pt="Movimento discreto" en="Restrained motion" /></h3><p><T pt="Aparecer devagar, uma vez, e respeitar quem prefere menos animação." en="Appear slowly, once, and respect anyone who prefers less animation." /></p></div>
+      </div>
+    </section>
+
+    <!-- CORES -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Cores" en="Color" /></span></div>
+      <h2 class="ds-h2" data-reveal><T pt="Paleta e contraste" en="Palette and contrast" /></h2>
+      <p class="ds-desc" data-reveal><T
+        pt="As razões de contraste são calculadas contra o fundo (--bg) ao gerar o site. Texto pequeno precisa de 4,5:1 ou mais; texto grande e elementos gráficos, 3:1."
+        en="Contrast ratios are calculated against the background (--bg) when the site is built. Small text needs 4.5:1 or more; large text and graphics, 3:1." /></p>
+      <div class="swatches">
+        {cores.map((c) => {
+          const ehTexto = c.papel === 'texto';
+          const ok = c.papel === 'texto' ? c.r >= 4.5 : c.papel === 'destaque' ? c.r >= 3 : true;
+          return (
+            <div class="swatch" data-reveal>
+              <div class="swatch-chip" style={ehTexto ? `background: var(--bg); color: var(${c.nome});` : `background: var(${c.nome});`}>{ehTexto ? 'Aa' : ''}</div>
+              <div class="swatch-info">
+                <span class="swatch-name">{c.nome}</span>
+                <span class="swatch-hex">{c.hex}</span>
+                <span class="swatch-use"><T pt={c.uso[0]} en={c.uso[1]} /></span>
+                {c.papel === 'texto' && <span class={`badge ${ok ? '' : 'alerta'}`}>{c.r.toFixed(1)}:1 · {ok ? 'AA' : '—'}</span>}
+                {c.papel === 'destaque' && <span class={`badge ${ok ? '' : 'alerta'}`}>{c.r.toFixed(1)}:1 · <T pt="só texto grande" en="large text only" /></span>}
+                {c.papel === 'borda' && <span class="badge">{brancoSobreVermelho.toFixed(1)}:1 · <T pt="texto branco sobre ele" en="white text on it" /></span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <!-- TIPOGRAFIA -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Tipografia" en="Typography" /></span></div>
+      <h2 class="ds-h2" data-reveal><T pt="Helvetica, em dois pesos" en="Helvetica, in two weights" /></h2>
+      <p class="ds-desc" data-reveal><T
+        pt="O site usa a Helvetica instalada no aparelho (Helvetica Neue no Mac e no iPhone). Onde ela não existe, como no Windows e no Android, entra a Arial, muito próxima. Títulos em negrito com espaçamento fechado; texto corrido em regular. O DM Mono aparece só em rótulos minúsculos."
+        en="The site uses the Helvetica installed on the device (Helvetica Neue on Mac and iPhone). Where it isn’t available, such as Windows and Android, Arial steps in, very close. Bold headings with tight tracking; regular for running text. DM Mono appears only in tiny labels." /></p>
+      <div class="font-stack" data-reveal>
+        <span class="big">Aa Gg Rr 123</span>
+        <span class="ds-code">font-family: 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif</span>
+      </div>
+      <div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name">Display / H1</span><span class="type-spec">--fs-h1 · clamp(3rem, 8.6vw, 6.75rem)<br>700 · −0.04em</span></div><div class="type-sample" style="font-size: var(--fs-h1); font-weight: var(--w-bold); letter-spacing: var(--track-display); line-height: 0.96;">Design Gráfico</div></div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name">Título / H2</span><span class="type-spec">--fs-h2 · clamp(2rem, 4.6vw, 3.5rem)<br>700 · −0.04em</span></div><div class="type-sample" style="font-size: var(--fs-h2); font-weight: var(--w-bold); letter-spacing: var(--track-display); line-height: 1;">Designer com propósito</div></div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name"><T pt="Título de card / H3" en="Card title / H3" /></span><span class="type-spec">--fs-h3 · 1.25rem<br>700 · −0.025em</span></div><div class="type-sample" style="font-size: var(--fs-h3); font-weight: var(--w-bold); letter-spacing: -0.025em;">Identidade visual completa</div></div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name"><T pt="Texto de apoio" en="Lead" /></span><span class="type-spec">--fs-lead · 1rem<br>400 · 1.75</span></div><div class="type-sample" style="font-size: var(--fs-lead); line-height: 1.75; color: var(--text-body); max-width: 56ch;">Bom design é aquele que comunica com clareza e deixa uma impressão duradoura.</div></div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name"><T pt="Corpo" en="Body" /></span><span class="type-spec">--fs-body · 0.875rem<br>400 · 1.8</span></div><div class="type-sample" style="font-size: var(--fs-body); line-height: 1.8; color: var(--text-body); max-width: 60ch;">Desenvolvimento completo de identidade visual, incluindo logo, paleta, tipografia e guia de marca, com aplicações em mídia digital e impressa.</div></div>
+        <div class="type-row" data-reveal><div class="type-meta"><span class="type-name"><T pt="Rótulo" en="Label" /></span><span class="type-spec">--font-mono · 10px<br>300 · +0.2em · caixa-alta</span></div><div class="type-sample"><span class="kicker">Design Gráfico / Branding</span></div></div>
+      </div>
+    </section>
+
+    <!-- ESPAÇO E LAYOUT -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Espaço e layout" en="Space and layout" /></span></div>
+      <h2 class="ds-h2" data-reveal><T pt="Escala de espaços" en="Spacing scale" /></h2>
+      <p class="ds-desc" data-reveal><T pt="Margens, intervalos e respiros saem sempre desta escala, nunca de valores soltos." en="Margins, gaps and breathing room always come from this scale, never from loose values." /></p>
+      <div data-reveal>
+        {espacos.map(([n, v]) => <div class="space-row"><span class="ds-code">{n}</span><span>{v}</span><div class="space-bar" style={`width: var(${n});`}></div></div>)}
+      </div>
+      <p class="ds-desc" style="margin-top: var(--sp-6);" data-reveal><T
+        pt="O conteúdo ocupa no máximo 1240 px (--container), centralizado, com margem lateral fluida (--gutter) e espaço entre cards também fluido (--gap). A grade passa de 3 para 2 e para 1 coluna conforme a tela."
+        en="Content is capped at 1240 px (--container), centered, with a fluid side margin (--gutter) and fluid card spacing (--gap). The grid goes from 3 to 2 to 1 columns as the screen narrows." /></p>
+      <div class="layout-demo" data-reveal><div>--gap</div><div>--gap</div><div>--gap</div></div>
+    </section>
+
+    <!-- COMPONENTES -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Componentes" en="Components" /></span></div>
+      <h2 class="ds-h2" data-reveal><T pt="Peças do site" en="Site parts" /></h2>
+      <p class="ds-desc" data-reveal><T pt="Cada peça abaixo é a real, com o mesmo CSS da home. O switch é interativo." en="Every piece below is the real one, with the same CSS as the home page. The switch is interactive." /></p>
+
+      <div class="demo" data-reveal>
+        <span class="kicker quiet demo-label"><T pt="Botão · rótulo · tags" en="Button · label · tags" /></span>
+        <a class="btn" href="#">Ver projeto</a>
+        <span class="kicker">Design Gráfico / Branding</span>
+        <div class="tags"><span class="tag">Logo</span><span class="tag">Papelaria</span><span class="tag">Identidade</span></div>
+      </div>
+
+      <div class="demo" data-reveal>
+        <span class="kicker quiet demo-label"><T pt="Switch de filtro · seletor de idioma" en="Filter switch · language toggle" /></span>
+        <div class="seg ready" id="dsSeg" role="group" aria-label="Exemplo">
+          <span class="seg-ind" aria-hidden="true"></span>
+          <button class="seg-btn" aria-pressed="true"><span><T pt="Todos" en="All" /></span><span class="seg-n">10</span></button>
+          <button class="seg-btn" aria-pressed="false"><span><T pt="Design Gráfico" en="Graphic Design" /></span><span class="seg-n">8</span></button>
+          <button class="seg-btn" aria-pressed="false"><span>UX/UI</span><span class="seg-n">2</span></button>
+        </div>
+        <div class="lang-toggle"><span class="lang-btn" style="background: var(--red-dark); color: var(--text);">PT-BR</span><span class="lang-btn">EN-US</span></div>
+      </div>
+
+      <div class="demo" data-reveal>
+        <span class="kicker quiet demo-label"><T pt="Card de projeto · informações" en="Project card · info" /></span>
+        <a class="card" href="#" aria-label="Exemplo de card">
+          <div class="card-media"><Placeholder slug="exemplo-card" area="grafico" /></div>
+          <div class="card-info"><div><h3 class="card-title">Nome do projeto</h3><p class="card-cat">Branding</p></div><span class="card-year">2026</span></div>
+        </a>
+        <div class="meta-row" style="flex: 1; min-width: 260px;">
+          <div class="meta-item"><span class="meta-label"><T pt="Função" en="Role" /></span><span class="meta-val">Designer Líder</span></div>
+          <div class="meta-item"><span class="meta-label"><T pt="Ano" en="Year" /></span><span class="meta-val">2026</span></div>
+          <div class="meta-item"><span class="meta-label"><T pt="Cliente" en="Client" /></span><span class="meta-val">Cliente</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOVIMENTO -->
+    <section class="wrap ds-block">
+      <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Movimento" en="Motion" /></span></div>
+      <h2 class="ds-h2" data-reveal><T pt="Aparecer ao rolar" en="Reveal on scroll" /></h2>
+      <p class="ds-desc" data-reveal><T
+        pt="Elementos sobem e aparecem quando entram na tela, uma única vez. Os que entram juntos surgem em sequência. Títulos grandes sobem de uma máscara, linha por linha. Quem ativa “reduzir movimento” no aparelho vê tudo parado."
+        en="Elements rise and fade in as they enter the screen, only once. Those entering together arrive in sequence. Large headings rise from a mask, line by line. Anyone with “reduce motion” enabled sees everything still." /></p>
+      <div class="demo" data-reveal>
+        <div class="motion-box go" id="dsMotion"><strong><T pt="Elemento de exemplo" en="Example element" /></strong><p><T pt="Sobe 28 px e aparece em 0,9 s." en="Rises 28 px and fades in over 0.9 s." /></p></div>
+        <button class="btn" id="dsReplay"><T pt="Repetir" en="Replay" /></button>
+      </div>
+      <div class="rules" data-reveal>
+        <div class="rule"><b><T pt="Curva" en="Easing" /></b><span class="ds-code">--ease</span><br>cubic-bezier(0.22, 1, 0.36, 1)</div>
+        <div class="rule"><b><T pt="Duração" en="Duration" /></b>0,2 s <T pt="(hover)" en="(hover)" /> · 0,4 s <T pt="(interface)" en="(interface)" /> · 0,9 s <T pt="(aparecer)" en="(reveal)" /></div>
+        <div class="rule"><b><T pt="Sequência" en="Stagger" /></b><T pt="90 ms entre elementos que entram juntos, no máximo 6 passos." en="90 ms between elements that enter together, up to 6 steps." /></div>
+        <div class="rule"><b><T pt="Acessibilidade" en="Accessibility" /></b><span class="ds-code">prefers-reduced-motion</span> <T pt="desliga tudo." en="turns it all off." /></div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  // switch de demonstração
+  const seg = document.getElementById('dsSeg')!;
+  const ind = seg.querySelector<HTMLElement>('.seg-ind')!;
+  const btns = seg.querySelectorAll<HTMLButtonElement>('.seg-btn');
+  const pos = () => {
+    const a = seg.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!a) return;
+    ind.style.width = a.offsetWidth + 'px';
+    ind.style.transform = `translateX(${a.offsetLeft}px)`;
+    seg.classList.add('has-ind');
+  };
+  btns.forEach((b) => b.addEventListener('click', () => { btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); pos(); }));
+  new ResizeObserver(pos).observe(seg);
+  document.fonts?.ready.then(pos);
+  pos();
+
+  // repetir o movimento de exemplo
+  const caixa = document.getElementById('dsMotion')!;
+  document.getElementById('dsReplay')!.addEventListener('click', () => {
+    caixa.classList.remove('go'); void caixa.offsetWidth; caixa.classList.add('go');
+  });
+</script>

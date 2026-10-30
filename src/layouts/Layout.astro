@@ -1,7 +1,4 @@
 ---
-import '@fontsource/bebas-neue';
-import '@fontsource/dm-sans/300.css';
-import '@fontsource/dm-sans/400.css';
 import '@fontsource/dm-mono/300.css';
 import '../styles/global.css';
 import T from '../components/T.astro';
@@ -34,6 +31,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <!-- escolhe o idioma antes de pintar a página (evita piscar) -->
     <script is:inline>
+      document.documentElement.classList.add('js');
       (function () {
         var p = new URLSearchParams(location.search).get('lang'), s;
         try { s = localStorage.getItem('lang'); } catch (e) {}
@@ -43,31 +41,36 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     </script>
   </head>
   <body>
-    <nav>
-      <a href="/" class="logo">caioqneves</a>
-      <div class="nav-right">
-        <ul class="nav-links">
-          <li><a href="/#trabalhos"><T pt="Trabalhos" en="Work" /></a></li>
-          <li><a href="/#sobre"><T pt="Sobre" en="About" /></a></li>
-          <li><a href="/#contato"><T pt="Contato" en="Contact" /></a></li>
-        </ul>
-        <div class="lang-toggle">
-          <button class="lang-btn" data-lang="pt" aria-pressed="true">PT-BR</button>
-          <button class="lang-btn" data-lang="en" aria-pressed="false">EN-US</button>
+    <header class="site-header">
+      <div class="wrap nav-inner">
+        <a href="/" class="logo">caioqneves</a>
+        <div class="nav-right">
+          <ul class="nav-links">
+            <li><a href="/#trabalhos"><T pt="Trabalhos" en="Work" /></a></li>
+            <li><a href="/#sobre"><T pt="Sobre" en="About" /></a></li>
+            <li><a href="/#contato"><T pt="Contato" en="Contact" /></a></li>
+          </ul>
+          <div class="lang-toggle">
+            <button class="lang-btn" data-lang="pt" aria-pressed="true">PT-BR</button>
+            <button class="lang-btn" data-lang="en" aria-pressed="false">EN-US</button>
+          </div>
         </div>
       </div>
-    </nav>
+    </header>
 
     <slot />
 
-    <footer>
-      <ul class="footer-links">
-        <li><a href={site.instagram.url} target="_blank" rel="noopener">Instagram</a></li>
-        <li><a href={site.behance.url} target="_blank" rel="noopener">Behance</a></li>
-        <li><a href={site.linkedin.url} target="_blank" rel="noopener">LinkedIn</a></li>
-        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
-      </ul>
-      <p class="footer-copy">© {new Date().getFullYear()} {site.nome}</p>
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <ul class="footer-links">
+          <li><a href={site.instagram.url} target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href={site.behance.url} target="_blank" rel="noopener">Behance</a></li>
+          <li><a href={site.linkedin.url} target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><a href="/design-system/">Design system</a></li>
+        </ul>
+        <p class="footer-copy">© {new Date().getFullYear()} {site.nome}</p>
+      </div>
     </footer>
 
     <script>
@@ -83,6 +86,28 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
         marcar();
       }));
       marcar();
+    </script>
+    <script>
+      // Elementos com data-reveal aparecem quando entram na tela (uma vez só).
+      // Os que entram juntos (ex.: uma fileira de cards) surgem em sequência.
+      const alvos = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      const reduzir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduzir || !('IntersectionObserver' in window)) {
+        alvos.forEach((el) => el.classList.add('is-in'));
+      } else {
+        const io = new IntersectionObserver((entradas) => {
+          entradas.filter((e) => e.isIntersecting).forEach((e, i) => {
+            const el = e.target as HTMLElement;
+            if (el.dataset.reveal !== 'lines' && el.dataset.reveal !== 'line') {
+              el.style.transitionDelay = `${Math.min(i, 6) * 90}ms`;
+              el.addEventListener('transitionend', () => (el.style.transitionDelay = ''), { once: true });
+            }
+            el.classList.add('is-in');
+            io.unobserve(el);
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        alvos.forEach((el) => io.observe(el));
+      }
     </script>
   </body>
 </html>

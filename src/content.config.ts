@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { AREA_IDS } from './data/areas';
 
 /*
   Cada projeto é uma PASTA em src/content/projetos/:
@@ -10,14 +11,14 @@ import { glob } from 'astro/loaders';
   Pastas que começam com "_" são ignoradas (ex.: _modelo).
 */
 const projetos = defineCollection({
-  loader: glob({ pattern: '*/{index,en}.md', base: './src/content/projetos' }),
+  loader: glob({ pattern: ['*/{index,en}.md', '!_*/**'], base: './src/content/projetos' }),   // '!_*/**' ignora pastas como _modelo
   schema: z.object({
     titulo: z.string(),
     categoria: z.string().optional(),
     resumo: z.string().optional(),
     funcao: z.string().optional(),
     // — os campos abaixo só precisam existir no index.md (PT) —
-    area: z.enum(['grafico', 'ux']).default('grafico'),
+    area: z.enum(AREA_IDS).default(AREA_IDS[0]),   // as opções vêm de src/data/areas.ts
     ano: z.coerce.number().optional(),
     cliente: z.string().optional(),
     ferramentas: z.array(z.string()).default([]),

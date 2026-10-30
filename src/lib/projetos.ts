@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import type { AreaId } from '../data/areas';
 
 type Entry = CollectionEntry<'projetos'>;
 
@@ -14,7 +15,7 @@ export interface Projeto {
   en?: Entry;
   capa?: ImageMetadata;
   galeria: ImageMetadata[];
-  area: 'grafico' | 'ux';
+  area: AreaId;
 }
 
 const slugDe = (e: Entry) => (e.filePath ?? '').split('/').slice(-2)[0];
@@ -31,7 +32,7 @@ export async function getProjetos(): Promise<Projeto[]> {
 
   const lista: Projeto[] = [];
   for (const [slug, g] of grupos) {
-    if (!g.pt) continue;                                        // en.md sem index.md: ignora
+    if (!g.pt || slug.startsWith('_')) continue;                                        // en.md sem index.md: ignora
     if (g.pt.data.rascunho && !import.meta.env.DEV) continue;   // rascunho só aparece no "npm run dev"
     const fotos = Object.entries(imagens)
       .filter(([caminho]) => caminho.startsWith(`/src/content/projetos/${slug}/`))

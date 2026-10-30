@@ -3,7 +3,9 @@ import { Image, getImage } from 'astro:assets';
 import { render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import T from '../../components/T.astro';
+import BehanceButton from '../../components/BehanceButton.astro';
 import { getProjetos } from '../../lib/projetos';
+import { areaDe } from '../../data/areas';
 
 export async function getStaticPaths() {
   const ps = await getProjetos();
@@ -14,7 +16,7 @@ export async function getStaticPaths() {
 }
 
 const { projeto: p, anterior, proximo } = Astro.props;
-const d = p.pt.data, e = p.en?.data;
+const d = p.pt.data, e = p.en?.data, area = areaDe(p.area);
 
 const temPt = !!p.pt.body?.trim();
 const temEn = !!p.en?.body?.trim();
@@ -32,8 +34,8 @@ if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferram
   <article class="projeto">
     <a class="voltar" href="/#trabalhos">← <T pt="Trabalhos" en="Work" /></a>
 
-    <header class="projeto-header">
-      <p class="kicker">{p.area === 'ux' ? 'UX/UI' : <T pt="Design Gráfico" en="Graphic Design" />}{d.categoria && <> / <T pt={d.categoria} en={e?.categoria} /></>}</p>
+    <header class="projeto-header" data-reveal="fade">
+      <p class="kicker"><T pt={area.pt} en={area.en} />{d.categoria && <> / <T pt={d.categoria} en={e?.categoria} /></>}</p>
       <h1 class="projeto-title"><T pt={d.titulo} en={e?.titulo} /></h1>
     </header>
 
@@ -57,7 +59,7 @@ if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferram
 
       {p.galeria.length > 0 && (
         <div class="galeria">
-          {p.galeria.map((img) => <Image src={img} alt={d.titulo} widths={[700, 1100, 1600]} sizes="(max-width: 900px) 100vw, 840px" loading="lazy" />)}
+          {p.galeria.map((img) => <Image src={img} alt={d.titulo} widths={[700, 1100, 1600]} sizes="(max-width: 900px) 100vw, 840px" loading="lazy" data-reveal />)}
         </div>
       )}
     </div>
@@ -66,5 +68,6 @@ if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferram
       {anterior ? <a href={`/projetos/${anterior.slug}/`}><span class="kicker">← <T pt="Anterior" en="Previous" /></span><span class="nome"><T pt={anterior.pt.data.titulo} en={anterior.en?.data.titulo} /></span></a> : <span />}
       {proximo ? <a href={`/projetos/${proximo.slug}/`}><span class="kicker"><T pt="Próximo" en="Next" /> →</span><span class="nome"><T pt={proximo.pt.data.titulo} en={proximo.en?.data.titulo} /></span></a> : <span />}
     </div>
+    <BehanceButton />
   </article>
 </Layout>

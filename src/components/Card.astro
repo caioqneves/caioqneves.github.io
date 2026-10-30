@@ -7,13 +7,17 @@ interface Props { projeto: Projeto }
 const { projeto: p } = Astro.props;
 const d = p.pt.data, e = p.en?.data;
 ---
-<a class="card" href={`/projetos/${p.slug}/`} data-area={p.area}>
-  {p.capa
-    ? <Image src={p.capa} alt={d.titulo} class="card-img" widths={[400, 700, 1000]} sizes="(max-width: 450px) 100vw, (max-width: 780px) 50vw, 34vw" />
-    : <Placeholder slug={p.slug} area={p.area} />}
-  <span class="card-area">{p.area === 'ux' ? 'UX/UI' : <T pt="Gráfico" en="Graphic" />}</span>
-  <div class="card-overlay">
-    <div class="card-title"><T pt={d.titulo} en={e?.titulo} /></div>
-    {d.categoria && <div class="card-cat"><T pt={d.categoria} en={e?.categoria} /></div>}
+<a class="card" href={`/projetos/${p.slug}/`} data-area={p.area} data-reveal>
+  <div class="card-media">
+    {p.capa
+      ? <Image src={p.capa} alt={d.titulo} class="card-img" widths={[400, 700, 1000]} sizes="(max-width: 520px) 100vw, (max-width: 960px) 50vw, 400px" />
+      : <Placeholder slug={p.slug} area={p.area} />}
+  </div>
+  <div class="card-info">
+    <div>
+      <h3 class="card-title"><T pt={d.titulo} en={e?.titulo} /></h3>
+      {d.categoria && <p class="card-cat"><T pt={d.categoria} en={e?.categoria} /></p>}
+    </div>
+    {d.ano && <span class="card-year">{d.ano}</span>}
   </div>
 </a>
