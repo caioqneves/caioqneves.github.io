@@ -23,6 +23,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
   <main>
     <!-- HERO -->
     <div class="hero-bg">
+      <span class="glow glow-a" aria-hidden="true"></span><span class="glow glow-b" aria-hidden="true"></span>
     <section class="hero wrap">
       <h1 class="hero-title" data-reveal="lines">
         <T html
@@ -163,6 +164,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
   // "Contato" também dá um "hover" rápido nos botões, um depois do outro.
   const sobre = document.getElementById('sobre');
   const links = document.querySelectorAll<HTMLElement>('.about-links .link-btn');
+  const alvoEl = document.querySelector<HTMLElement>('.about');   // foto + coluna da direita (sem o título)
   const cab = () => document.querySelector<HTMLElement>('.site-header')!.offsetHeight;
 
   function pulsar() {
@@ -171,10 +173,10 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
     }, i * 90));
   }
   function ir(comPulso: boolean) {
-    if (!sobre || !sobre.offsetParent) return false;          // seção não visível: o link age normalmente
+    if (!sobre || !alvoEl || !sobre.offsetParent) return false;          // seção não visível: o link age normalmente
     const livre = innerHeight - cab();                        // área da tela abaixo do cabeçalho
-    const topo = sobre.getBoundingClientRect().top + scrollY;
-    const alvo = sobre.offsetHeight < livre ? topo - cab() - (livre - sobre.offsetHeight) / 2 : topo - cab() - 16;
+    const topo = alvoEl!.getBoundingClientRect().top + scrollY;
+    const alvo = alvoEl!.offsetHeight < livre ? topo - cab() - (livre - alvoEl!.offsetHeight) / 2 : topo - cab() - 16;
     scrollTo({ top: Math.max(0, alvo), behavior: 'smooth' });
     let feito = false;
     const fim = () => { if (!feito) { feito = true; if (comPulso) pulsar(); } };
