@@ -9,8 +9,6 @@ import { AREAS } from '../data/areas';
 import { site } from '../data/site';
 
 const projetos = await getProjetos();
-const anos = projetos.map((p) => p.pt.data.ano).filter((a): a is number => !!a);
-const faixa = anos.length ? ` — ${Math.min(...anos)}–${Math.max(...anos)}` : '';
 
 // foto do "Sobre": coloque src/assets/profile.png (ou .jpg)
 const fotos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/profile.{png,jpg,jpeg,webp}', { eager: true });
@@ -24,6 +22,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
 <Layout>
   <main>
     <!-- HERO -->
+    <div class="hero-bg">
     <section class="hero wrap">
       <h1 class="hero-title" data-reveal="lines">
         <T html
@@ -37,11 +36,11 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
         <p>UX/UI Design</p>
       </div>
     </section>
+    </div>
 
     <!-- TRABALHOS -->
     <section class="section wrap" id="trabalhos">
       <div class="toolbar">
-        <div class="section-head" data-reveal="line"><span class="kicker quiet"><T pt="Seleção de trabalhos" en="Selected works" />{faixa}</span></div>
 
         <div class="seg" role="group" aria-label="Filtrar por área" data-reveal>
           <span class="seg-ind" aria-hidden="true"></span>
@@ -160,27 +159,33 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
 </script>
 
 <script>
-  // "Contato" no cabeçalho: leva ao Sobre mim e dá um "hover" rápido nos botões, um depois do outro
+  // "Sobre" e "Contato" no cabeçalho: levam a seção Sobre mim ao centro da tela.
+  // "Contato" também dá um "hover" rápido nos botões, um depois do outro.
   const sobre = document.getElementById('sobre');
   const links = document.querySelectorAll<HTMLElement>('.about-links .link-btn');
+  const cab = () => document.querySelector<HTMLElement>('.site-header')!.offsetHeight;
 
   function pulsar() {
     links.forEach((b, i) => setTimeout(() => {
       b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
     }, i * 90));
   }
-  function irParaContato() {
-    if (!sobre || !sobre.offsetParent) return false;     // seção não está visível: deixa o link agir normalmente
-    sobre.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  function ir(comPulso: boolean) {
+    if (!sobre || !sobre.offsetParent) return false;          // seção não visível: o link age normalmente
+    const livre = innerHeight - cab();                        // área da tela abaixo do cabeçalho
+    const topo = sobre.getBoundingClientRect().top + scrollY;
+    const alvo = sobre.offsetHeight < livre ? topo - cab() - (livre - sobre.offsetHeight) / 2 : topo - cab() - 16;
+    scrollTo({ top: Math.max(0, alvo), behavior: 'smooth' });
     let feito = false;
-    const fim = () => { if (!feito) { feito = true; pulsar(); } };
-    addEventListener('scrollend', fim, { once: true });  // quando a rolagem termina…
-    setTimeout(fim, 750);                                // …ou, no máximo, depois de 0,75 s
+    const fim = () => { if (!feito) { feito = true; if (comPulso) pulsar(); } };
+    addEventListener('scrollend', fim, { once: true });       // quando a rolagem termina…
+    setTimeout(fim, 750);                                     // …ou, no máximo, depois de 0,75 s
     return true;
   }
 
-  document.querySelectorAll('a[href$="#contato"]').forEach((a) =>
-    a.addEventListener('click', (e) => { if (irParaContato()) e.preventDefault(); }));
-  addEventListener('hashchange', () => { if (location.hash === '#contato') irParaContato(); });
-  if (location.hash === '#contato') setTimeout(irParaContato, 300);   // veio de outra página (ex.: de um projeto)
+  document.querySelectorAll<HTMLAnchorElement>('a[href$="#sobre"], a[href$="#contato"]').forEach((a) =>
+    a.addEventListener('click', (e) => { if (ir(a.hash === '#contato')) e.preventDefault(); }));
+  const porHashSobre = () => { if (location.hash === '#sobre' || location.hash === '#contato') ir(location.hash === '#contato'); };
+  addEventListener('hashchange', porHashSobre);
+  setTimeout(porHashSobre, 300);                              // veio de outra página (ex.: de um projeto)
 </script>

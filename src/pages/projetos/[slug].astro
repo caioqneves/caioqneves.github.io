@@ -25,8 +25,6 @@ const En = temEn ? (await render(p.en!)).Content : null;
 
 const og = p.capa ? (await getImage({ src: p.capa, width: 1200, format: 'jpg' })).src : undefined;
 const itens: { r: [string, string]; pt: string; en?: string }[] = [];
-if (d.funcao) itens.push({ r: ['Função', 'Role'], pt: d.funcao, en: e?.funcao });
-if (d.ano) itens.push({ r: ['Ano', 'Year'], pt: String(d.ano) });
 if (d.cliente) itens.push({ r: ['Cliente', 'Client'], pt: d.cliente });
 if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferramentas.join(', ') });
 ---
