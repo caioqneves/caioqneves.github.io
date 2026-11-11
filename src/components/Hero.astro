@@ -1,0 +1,84 @@
+---
+import T from './T.astro';
+// Etiquetas flutuantes: x e y são a posição inicial (0 a 1, em relação à área da hero).
+// Para trocar, acrescentar ou tirar uma, edite esta lista.
+const chips = [
+  { t: 'EDITORIAL', x: 0.13, y: 0.24 },
+  { t: 'BRANDING',  x: 0.62, y: 0.14 },
+  { t: 'UX',        x: 0.86, y: 0.7 },
+  { t: 'DESIGN',    x: 0.12, y: 0.72 },
+  { t: 'BRASÍLIA',  x: 0.3,  y: 0.88 },
+  { t: 'BRASIL',    x: 0.56, y: 0.9 },
+];
+---
+<section class="hero-stage" id="heroStage" aria-label="Apresentação">
+  <div class="hero-center">
+    <p class="hero-hi" data-reveal><T pt="Oi, eu sou o" en="Hi, I’m" /></p>
+    <h1 class="hero-name" data-reveal="lines"><span class="ln" style="--l:0"><span>CAIOQNEVES</span></span></h1>
+    <p class="hero-lead" data-reveal><T
+      pt="Designer gráfico e de UX/UI, com foco em identidade visual, interfaces digitais e direção de arte."
+      en="Graphic and UX/UI designer focused on visual identity, digital interfaces and art direction." /></p>
+  </div>
+  {chips.map((c) => <div class="chip" data-x={c.x} data-y={c.y}>{c.t}</div>)}
+</section>
+
+<script>
+  // Etiquetas que flutuam devagar e podem ser arrastadas (também com as setas do teclado).
+  const stage = document.getElementById('heroStage')!;
+  const reduzir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+  const itens = [...stage.querySelectorAll<HTMLElement>('.chip')].map((el, i) => ({
+    el, bx: parseFloat(el.dataset.x!), by: parseFloat(el.dataset.y!),
+    ph: i * 1.7 + 0.6, sp: 0.45 + (i % 4) * 0.12, ax: 10 + (i % 3) * 5, ay: 12 + (i % 2) * 6,
+    rot: (i % 2 ? 1 : -1) * (1.5 + i * 0.4), x: 0, y: 0, arrastando: false,
+  }));
+  const deriva = (it: (typeof itens)[number], t: number) =>
+    reduzir ? [0, 0, 0] : [Math.sin(t * it.sp + it.ph) * it.ax, Math.cos(t * it.sp * 0.8 + it.ph) * it.ay, Math.sin(t * it.sp * 0.6 + it.ph) * it.rot];
+
+  let visivel = true;
+  new IntersectionObserver(([e]) => { visivel = e.isIntersecting; }).observe(stage);
+
+  function quadro(ms: number) {
+    if (visivel) {
+      const t = ms / 1000, W = stage.clientWidth, H = stage.clientHeight;
+      itens.forEach((it) => {
+        const d = deriva(it, t), hw = it.el.offsetWidth / 2, hh = it.el.offsetHeight / 2;
+        if (!it.arrastando) { it.x = clamp(it.bx * W + d[0], hw, W - hw); it.y = clamp(it.by * H + d[1], hh, H - hh); }
+        it.el.style.transform = `translate(${it.x - hw}px,${it.y - hh}px) rotate(${it.arrastando ? 0 : d[2]}deg)`;
+      });
+    }
+    requestAnimationFrame(quadro);
+  }
+
+  itens.forEach((it) => {
+    const el = it.el; let ox = 0, oy = 0;
+    el.tabIndex = 0;
+    el.addEventListener('pointerdown', (e) => {
+      const r = stage.getBoundingClientRect();
+      it.arrastando = true; el.classList.add('dragging'); el.setPointerCapture(e.pointerId);
+      ox = e.clientX - r.left - it.x; oy = e.clientY - r.top - it.y;
+      itens.forEach((o) => { o.el.style.zIndex = o === it ? '5' : '2'; });
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!it.arrastando) return;
+      const r = stage.getBoundingClientRect(), hw = el.offsetWidth / 2, hh = el.offsetHeight / 2;
+      it.x = clamp(e.clientX - r.left - ox, hw, r.width - hw);
+      it.y = clamp(e.clientY - r.top - oy, hh, r.height - hh);
+    });
+    const fim = () => {
+      if (!it.arrastando) return;
+      const d = deriva(it, performance.now() / 1000);
+      it.bx = (it.x - d[0]) / stage.clientWidth; it.by = (it.y - d[1]) / stage.clientHeight;
+      it.arrastando = false; el.classList.remove('dragging');
+    };
+    el.addEventListener('pointerup', fim);
+    el.addEventListener('pointercancel', fim);
+    el.addEventListener('keydown', (e) => {
+      const s = 0.03;
+      if (e.key === 'ArrowLeft') it.bx -= s; else if (e.key === 'ArrowRight') it.bx += s;
+      else if (e.key === 'ArrowUp') it.by -= s; else if (e.key === 'ArrowDown') it.by += s; else return;
+      e.preventDefault();
+    });
+  });
+  requestAnimationFrame(quadro);
+</script>

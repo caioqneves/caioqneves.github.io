@@ -91,6 +91,21 @@ html[lang="en-US"] .l-pt { display: none !important; }
 .lang-btn:hover:not([aria-pressed="true"]) { color: var(--text); }
 
 /* ── HERO ── */
+.hero-stage { position: relative; min-height: max(560px, calc(100svh - 58px)); }
+.hero-center { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 var(--gutter); pointer-events: none; }
+.hero-hi { font-size: clamp(1.1rem, 2.4vw, 1.7rem); color: var(--text-muted); letter-spacing: 0.01em; }
+.hero-name { margin-top: 0.3rem; font-size: clamp(2.6rem, 11.5vw, 10.5rem); font-weight: var(--w-bold); line-height: 0.95; letter-spacing: -0.045em; }
+.hero-lead { margin-top: 1.6rem; max-width: 46ch; font-size: clamp(0.95rem, 1.4vw, 1.1rem); line-height: 1.55; color: var(--text-body); }
+/* etiquetas flutuantes: todas iguais, com contorno tracejado (traço longo e reto, sem cantos arredondados) */
+.chip { position: absolute; left: 0; top: 0; z-index: 2; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; will-change: transform;
+  padding: 1em 1.5em; font-size: clamp(0.68rem, 1.2vw, 0.9rem); font-weight: var(--w-bold); letter-spacing: 0.1em; color: var(--text); outline-offset: 6px;
+  background:
+    repeating-linear-gradient(90deg, currentColor 0 11px, transparent 11px 18px) top / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, currentColor 0 11px, transparent 11px 18px) bottom / 100% 2px no-repeat,
+    repeating-linear-gradient(0deg, currentColor 0 11px, transparent 11px 18px) left / 2px 100% no-repeat,
+    repeating-linear-gradient(0deg, currentColor 0 11px, transparent 11px 18px) right / 2px 100% no-repeat; }
+.chip.dragging { cursor: grabbing; z-index: 5; color: var(--red-text); }
+.chip:focus-visible { outline: 1.5px solid var(--red-text); }
 /* fundo: dois brilhos vermelhos (#C21504) muito suaves que derivam devagar sobre o preto (#0E0808).
    Cada brilho tem no máximo 12% de intensidade: mantém o contraste do texto e do acento vermelho (≥ 3:1). */
 .hero-bg { position: relative; overflow: hidden; isolation: isolate; }
@@ -102,11 +117,6 @@ html[lang="en-US"] .l-pt { display: none !important; }
 @keyframes glow-b { from { transform: translate3d(10%, 12%, 0) scale(1.1); }  to { transform: translate3d(-30%, -24%, 0) scale(0.95); } }
 .hero-bg::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: linear-gradient(to bottom, var(--bg) 0%, transparent 24%, transparent 62%, var(--bg) 100%); }
-.hero { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--sp-6); padding-block: clamp(4rem, 9vw, 7.5rem) clamp(2.5rem, 5vw, 4rem); }
-.hero-title { font-family: var(--font-display); font-weight: var(--w-bold); font-size: var(--fs-h1); line-height: 0.96; letter-spacing: var(--track-display); }
-.hero-title .accent { color: var(--red); }
-.hero-meta { text-align: right; }
-.hero-meta p { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); line-height: 2; }
 
 /* ── TÍTULO DE SEÇÃO ── */
 .section-head { display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-5); }
@@ -308,8 +318,6 @@ html[lang="en-US"] .l-pt { display: none !important; }
   .ds-principles { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 780px) {
-  .hero { flex-direction: column; align-items: flex-start; }
-  .hero-meta { text-align: left; }
   .nav-links { gap: var(--sp-5); }
   .about { grid-template-columns: 1fr; }
   .type-row { grid-template-columns: 1fr; gap: var(--sp-3); }

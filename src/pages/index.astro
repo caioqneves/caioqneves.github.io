@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import T from '../components/T.astro';
 import Card from '../components/Card.astro';
+import Hero from '../components/Hero.astro';
 import BehanceButton from '../components/BehanceButton.astro';
 import { getProjetos } from '../lib/projetos';
 import { AREAS } from '../data/areas';
@@ -24,19 +25,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
     <!-- HERO -->
     <div class="hero-bg">
       <span class="glow glow-a" aria-hidden="true"></span><span class="glow glow-b" aria-hidden="true"></span>
-    <section class="hero wrap">
-      <h1 class="hero-title" data-reveal="lines">
-        <T html
-          pt={'<span class="ln" style="--l:0"><span>Design</span></span><span class="ln" style="--l:1"><span class="accent">Gráfico</span></span><span class="ln" style="--l:2"><span>&amp; UX/UI</span></span>'}
-          en={'<span class="ln" style="--l:0"><span>Graphic</span></span><span class="ln" style="--l:1"><span class="accent">Design</span></span><span class="ln" style="--l:2"><span>&amp; UX/UI</span></span>'} />
-      </h1>
-      <div class="hero-meta" data-reveal>
-        <p>Brasil</p>
-        <p><T pt="Design Gráfico" en="Graphic Design" /></p>
-        <p><T pt="Identidade Visual" en="Visual Identity" /></p>
-        <p>UX/UI Design</p>
-      </div>
-    </section>
+      <Hero />
     </div>
 
     <!-- TRABALHOS -->
