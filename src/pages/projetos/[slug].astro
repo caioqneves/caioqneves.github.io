@@ -28,7 +28,7 @@ const itens: { r: [string, string]; pt: string; en?: string }[] = [];
 if (d.cliente) itens.push({ r: ['Cliente', 'Client'], pt: d.cliente });
 if (d.ferramentas.length) itens.push({ r: ['Ferramentas', 'Tools'], pt: d.ferramentas.join(', ') });
 ---
-<Layout title={`${d.titulo} — Caio Neves`} description={d.resumo} image={og}>
+<Layout title={`${d.titulo} — Caio Neves`} description={d.resumo} image={og} rail="trabalhos">
   <article class="projeto">
     <a class="voltar" href="/#trabalhos">← <T pt="Trabalhos" en="Work" /></a>
 

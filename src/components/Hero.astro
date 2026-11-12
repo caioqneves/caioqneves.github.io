@@ -30,10 +30,27 @@ const chips = [
   const itens = [...stage.querySelectorAll<HTMLElement>('.chip')].map((el, i) => ({
     el, bx: parseFloat(el.dataset.x!), by: parseFloat(el.dataset.y!),
     ph: i * 1.7 + 0.6, sp: 0.45 + (i % 4) * 0.12, ax: 10 + (i % 3) * 5, ay: 12 + (i % 2) * 6,
-    rot: (i % 2 ? 1 : -1) * (1.5 + i * 0.4), x: 0, y: 0, arrastando: false,
+    rot: (i % 2 ? 1 : -1) * (1.5 + i * 0.4), x: 0, y: 0, arrastando: false, cheio: false,
   }));
   const deriva = (it: (typeof itens)[number], t: number) =>
     reduzir ? [0, 0, 0] : [Math.sin(t * it.sp + it.ph) * it.ax, Math.cos(t * it.sp * 0.8 + it.ph) * it.ay, Math.sin(t * it.sp * 0.6 + it.ph) * it.rot];
+
+  // Colisão: a etiqueta enche de vermelho quando encosta no texto da hero ou em outra etiqueta.
+  const textos = ['.hero-hi', '.hero-name', '.hero-lead'].map((q) => stage.querySelector<HTMLElement>(q)!);
+  const linhasDeTexto = () => textos.flatMap((el) => {
+    const r = document.createRange(); r.selectNodeContents(el);               // retângulos reais de cada linha de texto
+    return [...r.getClientRects()].filter((q) => q.width > 0 && q.height > 0);
+  });
+  const toca = (a: DOMRect, b: DOMRect, m: number) =>
+    a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
+  function colisoes() {
+    const linhas = linhasDeTexto(), caixas = itens.map((it) => it.el.getBoundingClientRect());
+    itens.forEach((it, i) => {
+      const folga = it.cheio ? 12 : 0;                                         // histerese: só desenche quando se afastar um pouco
+      const bate = linhas.some((l) => toca(caixas[i], l, folga)) || caixas.some((c, j) => j !== i && toca(caixas[i], c, folga));
+      if (bate !== it.cheio) { it.cheio = bate; it.el.classList.toggle('is-filled', bate); }
+    });
+  }
 
   let visivel = true;
   new IntersectionObserver(([e]) => { visivel = e.isIntersecting; }).observe(stage);
@@ -46,6 +63,7 @@ const chips = [
         if (!it.arrastando) { it.x = clamp(it.bx * W + d[0], hw, W - hw); it.y = clamp(it.by * H + d[1], hh, H - hh); }
         it.el.style.transform = `translate(${it.x - hw}px,${it.y - hh}px) rotate(${it.arrastando ? 0 : d[2]}deg)`;
       });
+      colisoes();
     }
     requestAnimationFrame(quadro);
   }

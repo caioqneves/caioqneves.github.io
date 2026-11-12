@@ -1,0 +1,53 @@
+---
+import T from './T.astro';
+// Navegação lateral: traços que mostram onde você está na página.
+// Passe o mouse (ou use Tab) para ler os nomes; ao rolar, o nome da seção atual aparece por um instante.
+interface Props { active?: 'inicio' | 'trabalhos' | 'sobre' }
+const { active } = Astro.props;
+const itens = [
+  { id: 'inicio',    pt: 'Início',    en: 'Home' },
+  { id: 'trabalhos', pt: 'Trabalhos', en: 'Work' },
+  { id: 'sobre',     pt: 'Sobre mim', en: 'About me' },
+  { id: 'contato',   pt: 'Contato',   en: 'Contact' },
+];
+---
+<aside class="rail">
+  <nav class="rail-nav" aria-label="Seções">
+    {itens.map((i) => (
+      <a class:list={['rail-item', { 'is-active': active === i.id }]} href={`/#${i.id}`} data-id={i.id} aria-current={active === i.id ? 'true' : undefined}>
+        <span class="rail-label"><T pt={i.pt} en={i.en} /></span><span class="rail-dash" aria-hidden="true"></span>
+      </a>
+    ))}
+  </nav>
+  <!-- um só botão: mostra o idioma atual e, ao clicar, troca para o outro -->
+  <button class="rail-lang" id="langBtn" type="button" aria-label="Mudar para inglês / Switch to Portuguese" title="PT / EN">
+    <span class="l-pt">PT</span><span class="l-en">EN</span>
+  </button>
+</aside>
+
+<script>
+  // Marca no menu a seção que está no meio da tela.
+  const rail = document.querySelector<HTMLElement>('.rail')!;
+  const itens = [...rail.querySelectorAll<HTMLAnchorElement>('.rail-item')];
+  const alvos = ['inicio', 'trabalhos', 'sobre'].map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e);
+  let timer = 0;
+
+  function marcar(id: string) {
+    const antes = rail.querySelector('.is-active')?.getAttribute('data-id');
+    itens.forEach((a) => {
+      const ativo = a.dataset.id === id;
+      a.classList.toggle('is-active', ativo);
+      if (ativo) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+    if (antes && antes !== id) {                     // ao mudar de seção, mostra o nome por 1,6 s
+      rail.classList.add('peek');
+      clearTimeout(timer);
+      timer = window.setTimeout(() => rail.classList.remove('peek'), 1600);
+    }
+  }
+  if (alvos.length) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) marcar(e.target.id); }),
+      { rootMargin: '-45% 0px -45% 0px' });
+    alvos.forEach((a) => io.observe(a));
+  }
+</script>

@@ -1,14 +1,15 @@
 ---
 import '@fontsource/dm-mono/300.css';
 import '../styles/global.css';
-import T from '../components/T.astro';
+import Rail from '../components/Rail.astro';
 import { site } from '../data/site';
 
-interface Props { title?: string; description?: string; image?: string }
+interface Props { title?: string; description?: string; image?: string; rail?: 'inicio' | 'trabalhos' | 'sobre' }
 const {
   title = 'Caio Neves — Design Gráfico & UX/UI',
   description = 'Portfólio de Design Gráfico e UX/UI de Caio Neves',
   image,
+  rail,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? new URL(image, Astro.site).href : undefined;
@@ -41,22 +42,7 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     </script>
   </head>
   <body>
-    <header class="site-header">
-      <div class="wrap nav-inner">
-        <a href="/" class="logo">caioqneves</a>
-        <div class="nav-right">
-          <ul class="nav-links">
-            <li><a href="/#trabalhos"><T pt="Trabalhos" en="Work" /></a></li>
-            <li><a href="/#sobre"><T pt="Sobre" en="About" /></a></li>
-            <li><a href="/#contato"><T pt="Contato" en="Contact" /></a></li>
-          </ul>
-          <div class="lang-toggle">
-            <button class="lang-btn" data-lang="pt" aria-pressed="true">PT-BR</button>
-            <button class="lang-btn" data-lang="en" aria-pressed="false">EN-US</button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <Rail active={rail} />
 
     <slot />
 
@@ -74,17 +60,17 @@ const ogImage = image ? new URL(image, Astro.site).href : undefined;
     </footer>
 
     <script>
-      const botoes = document.querySelectorAll<HTMLButtonElement>('.lang-btn');
+      const botao = document.getElementById('langBtn');
       const marcar = () => {
-        const atual = document.documentElement.lang === 'en-US' ? 'en' : 'pt';
-        botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === atual)));
+        const en = document.documentElement.lang === 'en-US';
+        botao?.setAttribute('aria-label', en ? 'Switch to Portuguese' : 'Mudar para inglês');
       };
-      botoes.forEach((b) => b.addEventListener('click', () => {
-        const l = b.dataset.lang!;
+      botao?.addEventListener('click', () => {
+        const l = document.documentElement.lang === 'en-US' ? 'pt' : 'en';
         document.documentElement.lang = l === 'pt' ? 'pt-BR' : 'en-US';
         try { localStorage.setItem('lang', l); } catch (e) {}
         marcar();
-      }));
+      });
       marcar();
     </script>
     <script>

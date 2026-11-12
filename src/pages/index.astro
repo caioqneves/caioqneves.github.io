@@ -23,7 +23,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
 <Layout>
   <main>
     <!-- HERO -->
-    <div class="hero-bg">
+    <div class="hero-bg" id="inicio">
       <span class="glow glow-a" aria-hidden="true"></span><span class="glow glow-b" aria-hidden="true"></span>
       <Hero />
     </div>
@@ -154,7 +154,7 @@ const turn = svg('<path d="M3 3v5.5h9.5M9.5 5.5l3 3-3 3"/>');
   const sobre = document.getElementById('sobre');
   const links = document.querySelectorAll<HTMLElement>('.about-links .link-btn');
   const alvoEl = document.querySelector<HTMLElement>('.about');   // foto + coluna da direita (sem o título)
-  const cab = () => document.querySelector<HTMLElement>('.site-header')!.offsetHeight;
+  const cab = () => 0;   // sem cabeçalho fixo
 
   function pulsar() {
     links.forEach((b, i) => setTimeout(() => {
